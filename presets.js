@@ -1,6 +1,6 @@
 // 제품개발 엔지니어(Inventor) + Excel + YouTube 용 추천 구성. 15키(5×3), 폴더 키로 페이지 이동.
 // 아이콘: "i:이름" = 단색 선 아이콘(icons.js), 그 외 짧은 글자(E, F6, PgUp)는 글자로 표시.
-const CONFIG_VERSION = 9;
+const CONFIG_VERSION = 10;
 const PIN = '%APPDATA%\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar\\';
 
 // 페이지별 자동 전환: PC 맨 앞 프로그램이 이 이름(프로그램 이름 또는 창 제목 일부)이면 그 페이지로
@@ -85,7 +85,19 @@ const DEFAULT_PAGES = [
     B('다시 실행', 'i:redo-2', C.none, 'key', 'ctrl+y'),
     B('복사', 'i:copy', C.none, 'key', 'ctrl+c'),
     B('붙여넣기', 'i:clipboard-paste', C.none, 'key', 'ctrl+v'),
-    null, null, null, null, null,
+    B('전원', 'i:power', C.yt, 'page', '전원'),
+    null, null, null, null,
+  ]},
+  // 전원: PC 가 켜져 있을 때 쓰는 버튼 (절전/재시작/끄기는 누르면 확인 창)
+  { name: '전원', buttons: [
+    BACK(),
+    B('화면 잠금', 'i:lock', C.pc, 'power', 'lock'),
+    B('화면 끄기', 'i:monitor-off', C.pc, 'power', 'monitoroff'),
+    B('절전', 'i:moon', C.view, 'power', 'sleep'),
+    B('재시작', 'i:refresh-cw', C.yt, 'power', 'restart'),
+    B('끄기', 'i:power-off', C.yt, 'power', 'shutdown'),
+    B('종료 취소', 'i:x', C.none, 'power', 'cancel'),
+    null, null, null, null, null, null, null, null,
   ]},
   { name: 'Inventor', buttons: [
     BACK(),
