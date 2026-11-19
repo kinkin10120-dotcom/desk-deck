@@ -165,7 +165,10 @@ function isTextIcon(s) { return /^[\x21-\x7E\u2190-\u21FF\u25A0-\u25FF\uAC00-\uD
 function iconEl(icon) {
   const span = document.createElement('span');
   span.className = 'k-icon';
-  if (icon && icon.startsWith('i:') && ICONS[icon.slice(2)]) {
+  if (icon && icon.startsWith('b:') && typeof BRANDS !== 'undefined' && BRANDS[icon.slice(2)]) {
+    span.classList.add('svg', 'brand');
+    span.innerHTML = brandSvg(icon.slice(2));
+  } else if (icon && icon.startsWith('i:') && ICONS[icon.slice(2)]) {
     span.classList.add('svg');
     span.innerHTML = svgIcon(icon.slice(2));
   } else if (isTextIcon(icon || '')) {
@@ -176,6 +179,9 @@ function iconEl(icon) {
     span.textContent = icon || '';
   }
   return span;
+}
+function brandSvg(slug) {
+  return `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BRANDS[slug]}"/></svg>`;
 }
 function svgIcon(name) {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
@@ -227,22 +233,8 @@ function renderGrid() {
   }
 }
 
-// 키를 정사각형으로, 화면에 꽉 차게
-function layoutKeys() {
-  if (!config) return;
-  const st = $('#stage');
-  const cs = getComputedStyle(st);
-  const W = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-  const H = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-  const g = 0.18, p = 0.3;
-  const cols = pageCols(), rows = pageRows();
-  const k = Math.floor(Math.min(
-    W / (cols + (cols - 1) * g + 2 * p),
-    H / (rows + (rows - 1) * g + 2 * p),
-  ));
-  document.documentElement.style.setProperty('--k', Math.max(40, k) + 'px');
-}
-new ResizeObserver(layoutKeys).observe($('#stage'));
+// 버튼 크기는 CSS 그리드가 화면에 꽉 차게 자동으로 맞춤 (예전 고정 크기 계산은 사용 안 함)
+function layoutKeys() {}
 
 // 좌우로 밀어서 페이지 넘기기
 {
@@ -372,6 +364,15 @@ function selectColor(c) {
 function fillIconPicker() {
   const box = $('#iconPicker');
   box.innerHTML = '';
+  // 앱 로고 먼저
+  Object.keys(BRANDS).forEach((slug) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.title = slug;
+    b.innerHTML = brandSvg(slug);
+    b.onclick = () => { $('#fIcon').value = 'b:' + slug; updateIconPreview(); box.hidden = true; };
+    box.append(b);
+  });
   Object.keys(ICONS).sort().forEach((name) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -445,11 +446,13 @@ function openEditor(i) {
 
 // 프로그램 이름 → 어울리는 아이콘/이름
 const APP_HINTS = {
-  inventor: ['Inventor', 'drafting-compass'], excel: ['Excel', 'sheet'], chrome: ['Chrome', 'globe'], msedge: ['Edge', 'globe'],
-  weixin: ['WeChat', 'message-square'], wechat: ['WeChat', 'message-square'], kakaotalk: ['카카오톡', 'message-square'],
-  explorer: ['탐색기', 'folder-open'], claude: ['Claude', 'lightbulb'], winword: ['Word', 'file-text'], powerpnt: ['PowerPoint', 'image'],
-  outlook: ['Outlook', 'mail'], olk: ['Outlook', 'mail'], notepad: ['메모장', 'notepad-text'], calculatorapp: ['계산기', 'calculator'],
-  'ms-teams': ['Teams', 'users'], teams: ['Teams', 'users'], acad: ['AutoCAD', 'ruler'], parsecd: ['Parsec', 'monitor'],
+  inventor: ['Inventor', 'b:autodesk'], excel: ['Excel', 'b:microsoftexcel'], chrome: ['Chrome', 'b:googlechrome'], msedge: ['Edge', 'i:globe'],
+  weixin: ['WeChat', 'b:wechat'], wechat: ['WeChat', 'b:wechat'], kakaotalk: ['카카오톡', 'b:kakaotalk'],
+  explorer: ['탐색기', 'i:folder-open'], claude: ['Claude', 'b:claude'], winword: ['Word', 'b:microsoftword'], powerpnt: ['PowerPoint', 'b:microsoftpowerpoint'],
+  outlook: ['Outlook', 'i:mail'], olk: ['Outlook', 'i:mail'], notepad: ['메모장', 'i:notepad-text'], calculatorapp: ['계산기', 'i:calculator'],
+  'ms-teams': ['Teams', 'i:users'], teams: ['Teams', 'i:users'], acad: ['AutoCAD', 'b:autocad'], parsecd: ['Parsec', 'i:monitor'],
+  blender: ['Blender', 'b:blender'], illustrator: ['Illustrator', 'b:adobeillustrator'], photoshop: ['Photoshop', 'b:adobephotoshop'],
+  anycubicphotonworkshop: ['Anycubic', 'b:anycubic'], keyshot: ['KeyShot', 'i:camera'],
 };
 
 async function pickWindow() {
@@ -469,7 +472,7 @@ async function pickWindow() {
       const hint = APP_HINTS[(w.process || '').toLowerCase()];
       $('#fLine').value = w.process;
       if (!$('#fLabel').value.trim()) $('#fLabel').value = hint ? hint[0] : w.process;
-      if (!$('#fIcon').value.trim()) { $('#fIcon').value = 'i:' + (hint ? hint[1] : 'app-window'); updateIconPreview(); }
+      if (!$('#fIcon').value.trim()) { $('#fIcon').value = hint ? hint[1] : 'i:app-window'; updateIconPreview(); }
       box.hidden = true;
     };
     box.append(b);
@@ -667,6 +670,12 @@ function migrate(c) {
     const freshHome = JSON.parse(JSON.stringify(DEFAULT_PAGES.find((p) => p.name === '홈')));
     const i = c.pages.findIndex((p) => p.name === '홈');
     if (i >= 0) c.pages[i] = freshHome; else c.pages.unshift(freshHome);
+  }
+  if (c.version <= 10) {
+    // v11: 앱 버튼 아이콘을 실제 로고(단색)로 (배치·동작은 그대로)
+    c.pages.forEach((p) => p.buttons.forEach((b) => {
+      if (b && ['window', 'open', 'page'].includes(b.type) && LABEL_BRAND[b.label] && BRANDS[LABEL_BRAND[b.label]]) b.icon = 'b:' + LABEL_BRAND[b.label];
+    }));
   }
   c.pages.forEach((p) => { if (p.auto === undefined && AUTO_RULES[p.name]) p.auto = AUTO_RULES[p.name]; });
   c.version = CONFIG_VERSION;
