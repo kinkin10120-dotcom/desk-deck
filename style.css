@@ -27,8 +27,8 @@ svg { display: block; }
 
 /* ---- bottom bar (page name · dots · edit) — 얇게, 화면은 버튼에 양보 ---- */
 .bar {
-  flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-  height: calc(34px + env(safe-area-inset-bottom));
+  flex: none; display: grid; grid-template-columns: 1fr auto; align-items: center;
+  height: calc(28px + env(safe-area-inset-bottom));
   padding: 0 max(12px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(14px, env(safe-area-inset-left));
 }
 .page-title {
@@ -41,9 +41,9 @@ svg { display: block; }
 .bar-right { display: flex; gap: 4px; justify-content: flex-end; }
 .icon-btn {
   border: 0; background: transparent; color: var(--muted);
-  width: 32px; height: 30px; border-radius: 8px; display: grid; place-items: center;
+  width: 34px; height: 26px; border-radius: 8px; display: grid; place-items: center;
 }
-.icon-btn svg { width: 17px; height: 17px; }
+.icon-btn svg { width: 16px; height: 16px; }
 .icon-btn:active { background: #ffffff10; }
 .icon-btn.install { width: auto; padding: 0 14px; gap: 8px; display: flex; align-items: center; color: var(--bg); background: var(--accent); font-size: 14px; font-weight: 700; }
 .icon-btn.install svg { width: 18px; height: 18px; }
