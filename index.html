@@ -12,15 +12,6 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="top">
-  <div class="page-title"><span id="status" class="status" title="PC 연결 상태"></span><span id="pageName"></span></div>
-  <div class="top-right">
-    <button id="installBtn" class="icon-btn install" title="앱 설치" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg><span>앱 설치</span></button>
-    <button id="fullBtn" class="icon-btn" title="전체 화면" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
-    <button id="editBtn" class="icon-btn" title="편집"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.17 6.81a1 1 0 0 0-3.98-3.98L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/><path d="m15 5 4 4"/></svg></button>
-  </div>
-</header>
-
 <div id="editBar" class="edit-bar">
   <button data-act="addPage">＋ 페이지</button>
   <button data-act="renamePage">이름 변경</button>
@@ -29,7 +20,7 @@
   <button data-act="deletePage" class="danger">페이지 삭제</button>
   <button data-act="autoRule" id="autoRuleBtn">자동 전환 앱</button>
   <button data-act="autoToggle" id="autoToggleBtn">자동 전환: 켜짐</button>
-  <label>레이아웃 <select id="layoutSel"></select></label>
+  <label>이 페이지 칸 수 <select id="layoutSel"></select></label>
   <button data-act="reset" class="danger">추천 구성 복원</button>
   <span class="grow"></span>
   <button data-act="done" class="primary">완료</button>
@@ -37,11 +28,18 @@
 </div>
 
 <main id="stage" class="stage">
-  <div class="device">
-    <div id="grid" class="grid"></div>
-  </div>
+  <div id="grid" class="grid"></div>
 </main>
-<nav id="dots" class="dots"></nav>
+
+<footer class="bar">
+  <div class="page-title"><span id="status" class="status" title="PC 연결 상태"></span><span id="pageName"></span></div>
+  <nav id="dots" class="dots"></nav>
+  <div class="bar-right">
+    <button id="installBtn" class="icon-btn install" title="앱 설치" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg><span>앱 설치</span></button>
+    <button id="fullBtn" class="icon-btn" title="전체 화면" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+    <button id="editBtn" class="icon-btn" title="편집"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.17 6.81a1 1 0 0 0-3.98-3.98L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/><path d="m15 5 4 4"/></svg></button>
+  </div>
+</footer>
 
 <div id="toast" class="toast"></div>
 
@@ -117,6 +115,7 @@
 
 <script src="config.js"></script>
 <script src="icons.js"></script>
+<script src="brands.js"></script>
 <script src="presets.js"></script>
 <script src="app.js"></script>
 </body>
