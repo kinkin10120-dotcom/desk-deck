@@ -1,6 +1,13 @@
 // 제품개발 엔지니어(Inventor) + Excel + YouTube 용 추천 구성. 15키(5×3), 폴더 키로 페이지 이동.
 // 아이콘: "i:이름" = 단색 선 아이콘(icons.js), 그 외 짧은 글자(E, F6, PgUp)는 글자로 표시.
-const CONFIG_VERSION = 10;
+const CONFIG_VERSION = 11;
+// 버튼 이름 → 앱 로고 (구성 업그레이드에서도 사용)
+const LABEL_BRAND = {
+  'Chrome': 'googlechrome', 'Claude': 'claude', 'WeChat': 'wechat', '카카오톡': 'kakaotalk', 'Inventor': 'autodesk',
+  'AutoCAD': 'autocad', 'Blender': 'blender', 'Anycubic': 'anycubic', 'Illustrator': 'adobeillustrator', 'Photoshop': 'adobephotoshop',
+  'Excel': 'microsoftexcel', 'Word': 'microsoftword', 'PowerPoint': 'microsoftpowerpoint', 'YouTube': 'youtube',
+  'Excel 실행': 'microsoftexcel', 'YouTube 열기': 'youtube',
+};
 const PIN = '%APPDATA%\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar\\';
 
 // 페이지별 자동 전환: PC 맨 앞 프로그램이 이 이름(프로그램 이름 또는 창 제목 일부)이면 그 페이지로
@@ -24,22 +31,22 @@ const BACK = () => B('뒤로', 'i:arrow-left', C.none, 'back');
 const DEFAULT_PAGES = [
   // 홈: 작업 표시줄에 고정된 앱 (누르면 그 창이 맨 앞으로, 꺼져 있으면 실행) + 자주 쓰는 기능. 24키(6×4)
   { name: '홈', cols: 6, rows: 4, buttons: [
-    B('Chrome', 'i:globe', '#60a5fa', 'window', 'chrome|' + PIN + 'Google Chrome.lnk'),
+    B('Chrome', 'b:googlechrome', '#60a5fa', 'window', 'chrome|' + PIN + 'Google Chrome.lnk'),
     B('HANDYHAND', 'H', '#facc15', 'window', 'HANDYHAND|' + PIN + 'HANDYHAND.lnk'),
-    B('Claude', 'i:lightbulb', '#f59e0b', 'window', 'claude'),
-    B('WeChat', 'i:message-square', '#34d399', 'window', 'Weixin,WeChat|C:\\Program Files\\Tencent\\Weixin\\Weixin.exe'),
-    B('카카오톡', 'TALK', '#facc15', 'window', 'KakaoTalk|C:\\Program Files\\Kakao\\KakaoTalk\\KakaoTalk.exe'),
+    B('Claude', 'b:claude', '#f59e0b', 'window', 'claude'),
+    B('WeChat', 'b:wechat', '#34d399', 'window', 'Weixin,WeChat|C:\\Program Files\\Tencent\\Weixin\\Weixin.exe'),
+    B('카카오톡', 'b:kakaotalk', '#facc15', 'window', 'KakaoTalk|C:\\Program Files\\Kakao\\KakaoTalk\\KakaoTalk.exe'),
     B('InputShare', 'i:mouse-pointer-2', '', 'window', 'main|C:\\InputShare-win-x64\\main\\main.exe'),
-    B('Inventor', 'i:drafting-compass', C.inv, 'window', 'Inventor|' + PIN + 'Autodesk Inventor Professional 2020 - 한국어 (Korean).lnk'),
-    B('AutoCAD', 'A', '#f87171', 'window', 'acad|' + PIN + 'AutoCAD 2020 - 한국어(Korean).lnk'),
+    B('Inventor', 'b:autodesk', C.inv, 'window', 'Inventor|' + PIN + 'Autodesk Inventor Professional 2020 - 한국어 (Korean).lnk'),
+    B('AutoCAD', 'b:autocad', '#f87171', 'window', 'acad|' + PIN + 'AutoCAD 2020 - 한국어(Korean).lnk'),
     B('KeyShot', 'i:camera', '#f472b6', 'window', 'keyshot|' + PIN + 'KeyShot Studio.lnk'),
-    B('Blender', 'i:axis-3d', '#fb923c', 'window', 'blender|' + PIN + 'Blender 5.1.lnk'),
-    B('Anycubic', 'i:layers', '#60a5fa', 'window', 'AnycubicPhotonWorkshop|' + PIN + 'AnycubicPhotonWorkshop.lnk'),
-    B('Illustrator', 'Ai', '#fb923c', 'window', 'Illustrator|' + PIN + 'Adobe Illustrator 2026.lnk'),
-    B('Photoshop', 'Ps', '#60a5fa', 'window', 'Photoshop|' + PIN + 'Adobe Photoshop 2026.lnk'),
-    B('Excel', 'i:sheet', C.xl, 'window', 'excel'),
-    B('Word', 'i:file-text', '#60a5fa', 'window', 'winword|winword'),
-    B('PowerPoint', 'i:image', '#fb923c', 'window', 'powerpnt|powerpnt'),
+    B('Blender', 'b:blender', '#fb923c', 'window', 'blender|' + PIN + 'Blender 5.1.lnk'),
+    B('Anycubic', 'b:anycubic', '#60a5fa', 'window', 'AnycubicPhotonWorkshop|' + PIN + 'AnycubicPhotonWorkshop.lnk'),
+    B('Illustrator', 'b:adobeillustrator', '#fb923c', 'window', 'Illustrator|' + PIN + 'Adobe Illustrator 2026.lnk'),
+    B('Photoshop', 'b:adobephotoshop', '#60a5fa', 'window', 'Photoshop|' + PIN + 'Adobe Photoshop 2026.lnk'),
+    B('Excel', 'b:microsoftexcel', C.xl, 'window', 'excel'),
+    B('Word', 'b:microsoftword', '#60a5fa', 'window', 'winword|winword'),
+    B('PowerPoint', 'b:microsoftpowerpoint', '#fb923c', 'window', 'powerpnt|powerpnt'),
     B('탐색기', 'i:folder-open', C.none, 'window', 'explorer'),
     B('계산기', 'i:calculator', C.none, 'window', 'CalculatorApp|calc'),
     B('업무 시작', 'i:power', C.inv, 'macro',
@@ -76,9 +83,9 @@ const DEFAULT_PAGES = [
   ]},
   { name: '단축키', buttons: [
     BACK(),
-    B('Inventor', 'i:drafting-compass', C.inv, 'page', 'Inventor'),
-    B('Excel', 'i:sheet', C.xl, 'page', 'Excel'),
-    B('YouTube', 'i:youtube', C.yt, 'page', 'YouTube'),
+    B('Inventor', 'b:autodesk', C.inv, 'page', 'Inventor'),
+    B('Excel', 'b:microsoftexcel', C.xl, 'page', 'Excel'),
+    B('YouTube', 'b:youtube', C.yt, 'page', 'YouTube'),
     B('PC', 'i:laptop', C.pc, 'page', 'PC'),
     B('저장', 'i:save', C.none, 'key', 'ctrl+s'),
     B('실행 취소', 'i:undo-2', C.none, 'key', 'ctrl+z'),
@@ -182,7 +189,7 @@ const DEFAULT_PAGES = [
   ]},
   { name: 'Excel', buttons: [
     BACK(),
-    B('Excel 실행', 'i:sheet', C.xl, 'open', 'excel'),
+    B('Excel 실행', 'b:microsoftexcel', C.xl, 'open', 'excel'),
     B('값만 붙여넣기', '123', C.xl, 'macro', 'key ctrl+alt+v\nwait 400\nkey v\nkey enter'),
     B('자동 합계', 'i:sigma', C.xl, 'key', 'alt+='),
     B('필터', 'i:filter', C.xl, 'key', 'ctrl+shift+l'),
@@ -199,7 +206,7 @@ const DEFAULT_PAGES = [
   ]},
   { name: 'YouTube', buttons: [
     BACK(),
-    B('YouTube 열기', 'i:youtube', C.yt, 'open', 'https://www.youtube.com'),
+    B('YouTube 열기', 'b:youtube', C.yt, 'open', 'https://www.youtube.com'),
     B('재생 / 정지', 'i:circle-play', C.yt, 'key', 'k'),
     B('10초 뒤로', 'i:rewind', C.yt, 'key', 'j'),
     B('10초 앞으로', 'i:fast-forward', C.yt, 'key', 'l'),
