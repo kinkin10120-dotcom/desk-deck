@@ -25,24 +25,25 @@ body {
 button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
 svg { display: block; }
 
-/* ---- top ---- */
-.top {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px max(18px, env(safe-area-inset-right)) 0 max(18px, env(safe-area-inset-left));
-  min-height: 52px;
+/* ---- bottom bar (page name · dots · edit) — 얇게, 화면은 버튼에 양보 ---- */
+.bar {
+  flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  height: calc(34px + env(safe-area-inset-bottom));
+  padding: 0 max(12px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(14px, env(safe-area-inset-left));
 }
 .page-title {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: .14em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+  font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .12em; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden;
 }
-.status { width: 6px; height: 6px; border-radius: 50%; background: var(--err); }
+.status { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--err); }
 .status.on { background: var(--ok); }
-.top-right { display: flex; gap: 6px; }
+.bar-right { display: flex; gap: 4px; justify-content: flex-end; }
 .icon-btn {
   border: 0; background: transparent; color: var(--muted);
-  width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center;
+  width: 32px; height: 30px; border-radius: 8px; display: grid; place-items: center;
 }
-.icon-btn svg { width: 20px; height: 20px; }
+.icon-btn svg { width: 17px; height: 17px; }
 .icon-btn:active { background: #ffffff10; }
 .icon-btn.install { width: auto; padding: 0 14px; gap: 8px; display: flex; align-items: center; color: var(--bg); background: var(--accent); font-size: 14px; font-weight: 700; }
 .icon-btn.install svg { width: 18px; height: 18px; }
@@ -54,8 +55,8 @@ body.editing #editBtn { color: var(--bg); background: var(--accent); }
 
 /* ---- edit bar ---- */
 .edit-bar {
-  display: none; flex-wrap: wrap; align-items: center; gap: 8px;
-  margin: 8px 18px 0; padding: 8px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  display: none; flex: none; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin: max(8px, env(safe-area-inset-top)) 10px 0; padding: 8px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
 }
 body.editing .edit-bar { display: flex; }
 .edit-bar button, .dlg-actions button, .login-box button, .pick-btn {
@@ -70,29 +71,26 @@ select, input, textarea {
 button.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
 button.danger { color: #fca5a5; }
 
-/* ---- stage & device ---- */
+/* ---- stage: 버튼이 화면을 꽉 채움 ---- */
 .stage {
-  flex: 1; min-height: 0; display: grid; place-items: center;
-  padding: 8px 18px; touch-action: none;
-}
-.device {
-  padding: calc(var(--k) * .28);
-  border-radius: calc(var(--k) * .34);
-  background: #101113;
-  box-shadow: 0 0 0 1px #1c1d21, inset 0 1px 0 #ffffff0a, 0 40px 80px -30px #000;
+  flex: 1; min-height: 0;
+  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 2px max(10px, env(safe-area-inset-left));
+  touch-action: none;
 }
 .grid {
+  width: 100%; height: 100%;
   display: grid;
-  grid-template-columns: repeat(var(--cols, 5), var(--k));
-  grid-template-rows: repeat(var(--rows, 3), var(--k));
-  gap: calc(var(--k) * .16);
+  grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--rows, 3), minmax(0, 1fr));
+  gap: 10px;
 }
 
-/* ---- keys ---- */
+/* ---- keys: 크기는 칸에 맞춰지고, 아이콘·글자는 버튼 크기에 비례 (cqmin) ---- */
 .key {
-  position: relative; width: var(--k); height: var(--k); padding: 0;
-  border: 0; border-radius: calc(var(--k) * .2);
+  position: relative; min-width: 0; min-height: 0; padding: 0;
+  border: 0; border-radius: 16px;
   background: transparent;
+  container-type: size;
   transition: transform .08s ease;
 }
 .face {
@@ -103,29 +101,30 @@ button.danger { color: #fca5a5; }
   color: var(--icon);
   transition: background .12s ease;
 }
-.k-icon { display: grid; place-items: center; margin-top: calc(var(--k) * -.08); }
-.k-icon.svg svg { width: calc(var(--k) * .36); height: calc(var(--k) * .36); }
+.k-icon { display: grid; place-items: center; margin-top: -9cqh; }
+.k-icon.svg svg { width: 34cqmin; height: 34cqmin; }
+.k-icon.brand svg { width: 31cqmin; height: 31cqmin; }
 .k-icon.txt {
   font-family: "Inter", "Segoe UI", system-ui, sans-serif; font-weight: 600; letter-spacing: -.03em; line-height: 1;
 }
-.k-icon.txt.l { font-size: calc(var(--k) * .36); }
-.k-icon.txt.m { font-size: calc(var(--k) * .26); }
-.k-icon.txt.s { font-size: calc(var(--k) * .2); }
-.k-icon.emoji { font-size: calc(var(--k) * .32); line-height: 1; filter: grayscale(1) brightness(1.6) contrast(.9); }
+.k-icon.txt.l { font-size: 34cqmin; }
+.k-icon.txt.m { font-size: 25cqmin; }
+.k-icon.txt.s { font-size: 19cqmin; }
+.k-icon.emoji { font-size: 30cqmin; line-height: 1; filter: grayscale(1) brightness(1.6) contrast(.9); }
 .face.no-label .k-icon { margin-top: 0; }
 .k-label {
-  position: absolute; left: 6%; right: 6%; bottom: calc(var(--k) * .1);
-  font-size: calc(var(--k) * .1); font-weight: 500; color: #a1a5ae; text-align: center;
+  position: absolute; left: 6%; right: 6%; bottom: 9cqh;
+  font-size: clamp(11px, 10.5cqmin, 19px); font-weight: 500; color: #a1a5ae; text-align: center;
   line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.01em;
 }
 .k-dot {
-  position: absolute; top: calc(var(--k) * .11); left: calc(var(--k) * .11);
-  width: calc(var(--k) * .055); height: calc(var(--k) * .055); border-radius: 50%;
+  position: absolute; top: 10cqmin; left: 10cqmin;
+  width: max(5px, 5cqmin); height: max(5px, 5cqmin); border-radius: 50%;
 }
 .k-badge {
-  position: absolute; top: calc(var(--k) * .07); right: calc(var(--k) * .07); color: #6b7079;
+  position: absolute; top: 7cqmin; right: 7cqmin; color: #6b7079;
 }
-.k-badge svg { width: calc(var(--k) * .13); height: calc(var(--k) * .13); }
+.k-badge svg { width: 13cqmin; height: 13cqmin; }
 .key.back .face { background: transparent; box-shadow: inset 0 0 0 1px #2a2c31; color: #a1a5ae; }
 
 .key:active { transform: scale(.94); }
@@ -141,14 +140,14 @@ button.danger { color: #fca5a5; }
 .key.empty .face { background: #0e0f11; box-shadow: inset 0 0 0 1px #17181b; }
 body:not(.editing) .key.empty { pointer-events: none; }
 .k-plus { display: none; color: #4b4f57; }
-.k-plus svg { width: calc(var(--k) * .22); height: calc(var(--k) * .22); }
+.k-plus svg { width: 22cqmin; height: 22cqmin; }
 body.editing .key.empty .k-plus { display: block; }
 body.editing .key:not(.empty) .face { box-shadow: inset 0 0 0 1px #ffffff26, 0 6px 14px #00000080; }
 .key.moving .face { box-shadow: inset 0 0 0 2px var(--accent) !important; animation: pulse 1s infinite; }
 @keyframes pulse { 50% { opacity: .5; } }
 
 /* ---- page dots ---- */
-.dots { display: flex; justify-content: center; gap: 8px; padding: 6px 16px max(18px, env(safe-area-inset-bottom)); flex-wrap: wrap; }
+.dots { display: flex; justify-content: center; align-items: center; gap: 7px; }
 .dot { width: 6px; height: 6px; padding: 0; border-radius: 999px; border: 0; background: #34363c; transition: width .2s, background .2s; }
 .dot.active { width: 22px; background: var(--text); }
 
@@ -183,7 +182,7 @@ dialog label { display: flex; flex-direction: column; gap: 6px; font-size: 13px;
 .icon-field { width: 150px; }
 .icon-field input { font-family: ui-monospace, Consolas, monospace; font-size: 14px; }
 .icon-preview {
-  --k: 64px; width: 64px; height: 64px; flex: none; border-radius: 14px; display: grid; place-items: center;
+  width: 64px; height: 64px; flex: none; border-radius: 14px; display: grid; place-items: center; container-type: size;
   background: linear-gradient(180deg, #232428, #1a1b1e); color: var(--icon); box-shadow: inset 0 1px 0 #ffffff12;
 }
 .icon-preview .k-icon { margin: 0; }
