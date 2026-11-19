@@ -1,6 +1,7 @@
 // 제품개발 엔지니어(Inventor) + Excel + YouTube 용 추천 구성. 15키(5×3), 폴더 키로 페이지 이동.
 // 아이콘: "i:이름" = 단색 선 아이콘(icons.js), 그 외 짧은 글자(E, F6, PgUp)는 글자로 표시.
-const CONFIG_VERSION = 8;
+const CONFIG_VERSION = 9;
+const PIN = '%APPDATA%\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar\\';
 
 // 페이지별 자동 전환: PC 맨 앞 프로그램이 이 이름(프로그램 이름 또는 창 제목 일부)이면 그 페이지로
 const AUTO_RULES = {
@@ -21,24 +22,32 @@ const C = COLORS;
 const BACK = () => B('뒤로', 'i:arrow-left', C.none, 'back');
 
 const DEFAULT_PAGES = [
-  { name: '홈', buttons: [
-    // 1~2줄: 누르면 그 프로그램 창이 맨 앞으로 (없으면 실행)
-    B('Inventor', 'i:drafting-compass', C.inv, 'window', 'Inventor'),
+  // 홈: 작업 표시줄에 고정된 앱 (누르면 그 창이 맨 앞으로, 꺼져 있으면 실행) + 자주 쓰는 기능. 24키(6×4)
+  { name: '홈', cols: 6, rows: 4, buttons: [
+    B('Chrome', 'i:globe', '#60a5fa', 'window', 'chrome|' + PIN + 'Google Chrome.lnk'),
+    B('HANDYHAND', 'H', '#facc15', 'window', 'HANDYHAND|' + PIN + 'HANDYHAND.lnk'),
+    B('Claude', 'i:lightbulb', '#f59e0b', 'window', 'claude'),
+    B('WeChat', 'i:message-square', '#34d399', 'window', 'Weixin,WeChat|C:\\Program Files\\Tencent\\Weixin\\Weixin.exe'),
+    B('카카오톡', 'TALK', '#facc15', 'window', 'KakaoTalk|C:\\Program Files\\Kakao\\KakaoTalk\\KakaoTalk.exe'),
+    B('InputShare', 'i:mouse-pointer-2', '', 'window', 'main|C:\\InputShare-win-x64\\main\\main.exe'),
+    B('Inventor', 'i:drafting-compass', C.inv, 'window', 'Inventor|' + PIN + 'Autodesk Inventor Professional 2020 - 한국어 (Korean).lnk'),
+    B('AutoCAD', 'A', '#f87171', 'window', 'acad|' + PIN + 'AutoCAD 2020 - 한국어(Korean).lnk'),
+    B('KeyShot', 'i:camera', '#f472b6', 'window', 'keyshot|' + PIN + 'KeyShot Studio.lnk'),
+    B('Blender', 'i:axis-3d', '#fb923c', 'window', 'blender|' + PIN + 'Blender 5.1.lnk'),
+    B('Anycubic', 'i:layers', '#60a5fa', 'window', 'AnycubicPhotonWorkshop|' + PIN + 'AnycubicPhotonWorkshop.lnk'),
+    B('Illustrator', 'Ai', '#fb923c', 'window', 'Illustrator|' + PIN + 'Adobe Illustrator 2026.lnk'),
+    B('Photoshop', 'Ps', '#60a5fa', 'window', 'Photoshop|' + PIN + 'Adobe Photoshop 2026.lnk'),
     B('Excel', 'i:sheet', C.xl, 'window', 'excel'),
-    B('Chrome', 'i:globe', C.edit, 'window', 'chrome'),
-    B('YouTube', 'i:youtube', C.yt, 'window', 'YouTube|https://www.youtube.com'),
-    B('WeChat', 'i:message-square', C.text, 'window', 'Weixin,WeChat'),
+    B('Word', 'i:file-text', '#60a5fa', 'window', 'winword|winword'),
+    B('PowerPoint', 'i:image', '#fb923c', 'window', 'powerpnt|powerpnt'),
     B('탐색기', 'i:folder-open', C.none, 'window', 'explorer'),
-    B('Claude', 'i:lightbulb', C.none, 'window', 'claude'),
     B('계산기', 'i:calculator', C.none, 'window', 'CalculatorApp|calc'),
-    B('메모장', 'i:notepad-text', C.none, 'window', 'notepad'),
-    B('창 전환', 'i:arrow-left-right', C.none, 'key', 'alt+tab'),
-    // 3줄: 묶음 동작 + 폴더들
     B('업무 시작', 'i:power', C.inv, 'macro',
-      '# 업무 프로그램을 한 번에 열거나 앞으로\nwindow Inventor\nwait 1500\nwindow excel\nwait 1500\nwindow chrome\nwait 1000\nwindow Weixin,WeChat'),
+      '# 업무 프로그램을 한 번에 열거나 앞으로\nwindow Inventor|' + PIN + 'Autodesk Inventor Professional 2020 - 한국어 (Korean).lnk\nwait 1500\nwindow excel\nwait 1500\nwindow chrome\nwait 1000\nwindow Weixin,WeChat|C:\\Program Files\\Tencent\\Weixin\\Weixin.exe'),
     B('문구', 'i:message-square', C.text, 'page', '문구'),
     B('폴더', 'i:folder', C.app, 'page', '폴더'),
     B('단축키', 'i:keyboard', C.pc, 'page', '단축키'),
+    B('창 전환', 'i:arrow-left-right', C.none, 'key', 'alt+tab'),
     B('화면 캡처', 'i:scan', C.none, 'key', 'win+shift+s'),
   ]},
   { name: '문구', buttons: [
