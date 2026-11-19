@@ -1,6 +1,6 @@
 // 제품개발 엔지니어(Inventor) + Excel + YouTube 용 추천 구성. 15키(5×3), 폴더 키로 페이지 이동.
 // 아이콘: "i:이름" = 단색 선 아이콘(icons.js), 그 외 짧은 글자(E, F6, PgUp)는 글자로 표시.
-const CONFIG_VERSION = 6;
+const CONFIG_VERSION = 7;
 
 // 포인트 색 (키 왼쪽 위 작은 점으로만 표시)
 const COLORS = {
@@ -16,21 +16,35 @@ const BACK = () => B('뒤로', 'i:arrow-left', C.none, 'back');
 
 const DEFAULT_PAGES = [
   { name: '홈', buttons: [
+    // 1~2줄: 누르면 그 프로그램 창이 맨 앞으로 (없으면 실행)
+    B('Inventor', 'i:drafting-compass', C.inv, 'window', 'Inventor'),
+    B('Excel', 'i:sheet', C.xl, 'window', 'excel'),
+    B('Chrome', 'i:globe', C.edit, 'window', 'chrome'),
+    B('YouTube', 'i:youtube', C.yt, 'window', 'YouTube|https://www.youtube.com'),
+    B('WeChat', 'i:message-square', C.text, 'window', 'Weixin,WeChat'),
+    B('탐색기', 'i:folder-open', C.none, 'window', 'explorer'),
+    B('Claude', 'i:lightbulb', C.none, 'window', 'claude'),
+    B('메모장', 'i:notepad-text', C.none, 'window', 'notepad'),
+    B('계산기', 'i:calculator', C.none, 'window', 'CalculatorApp|calc'),
+    B('창 전환', 'i:arrow-left-right', C.none, 'key', 'alt+tab'),
+    B('화면 캡처', 'i:scan', C.none, 'key', 'win+shift+s'),
+    B('바탕화면', 'i:monitor', C.none, 'key', 'win+d'),
+    B('단축키', 'i:keyboard', C.pc, 'page', '단축키'),
+    B('볼륨 −', 'i:volume-1', C.media, 'key', 'volumedown'),
+    B('볼륨 +', 'i:volume-2', C.media, 'key', 'volumeup'),
+  ]},
+  { name: '단축키', buttons: [
+    BACK(),
     B('Inventor', 'i:drafting-compass', C.inv, 'page', 'Inventor'),
     B('Excel', 'i:sheet', C.xl, 'page', 'Excel'),
     B('YouTube', 'i:youtube', C.yt, 'page', 'YouTube'),
     B('PC', 'i:laptop', C.pc, 'page', 'PC'),
-    B('화면 캡처', 'i:scan', C.none, 'key', 'win+shift+s'),
     B('저장', 'i:save', C.none, 'key', 'ctrl+s'),
     B('실행 취소', 'i:undo-2', C.none, 'key', 'ctrl+z'),
     B('다시 실행', 'i:redo-2', C.none, 'key', 'ctrl+y'),
     B('복사', 'i:copy', C.none, 'key', 'ctrl+c'),
     B('붙여넣기', 'i:clipboard-paste', C.none, 'key', 'ctrl+v'),
-    B('계산기', 'i:calculator', C.none, 'open', 'calc'),
-    B('탐색기', 'i:folder-open', C.none, 'key', 'win+e'),
-    B('바탕화면', 'i:monitor', C.none, 'key', 'win+d'),
-    B('볼륨 −', 'i:volume-1', C.none, 'key', 'volumedown'),
-    B('볼륨 +', 'i:volume-2', C.none, 'key', 'volumeup'),
+    null, null, null, null, null,
   ]},
   { name: 'Inventor', buttons: [
     BACK(),
