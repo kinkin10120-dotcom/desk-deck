@@ -145,8 +145,17 @@ function goBack() {
   goPage(navStack.length ? navStack.pop() : 0, false);
 }
 
+const THEMES = [['tint', '틴트'], ['neon', '네온'], ['keycap', '키캡'], ['glass', '글래스']];
+function applyTheme() {
+  const t = (config && config.theme) || 'glass';
+  THEMES.forEach(([k]) => document.body.classList.toggle('theme-' + k, k === t));
+  const sel = $('#themeSel');
+  if (sel) sel.value = t;
+}
+
 function render() {
   if (!config) return;
+  applyTheme();
   document.body.classList.toggle('editing', editing);
   $('#pageName').textContent = curPage().name;
   $('#layoutSel').value = `${Math.max(baseCols(), baseRows())}x${Math.min(baseCols(), baseRows())}`;
@@ -215,6 +224,7 @@ function renderGrid() {
     face.className = 'face';
     if (b) {
       const icon = b.icon || '';
+      el.style.setProperty('--c', b.color || '#9ca3af');
       if (b.color) {
         const dot = document.createElement('span');
         dot.className = 'k-dot';
@@ -532,6 +542,8 @@ function setupEditor() {
 }
 
 function setupEditBar() {
+  THEMES.forEach(([k, name]) => $('#themeSel').add(new Option(name, k)));
+  $('#themeSel').onchange = (e) => { config.theme = e.target.value; persist(); render(); };
   LAYOUTS.forEach(([c, r, name]) => $('#layoutSel').add(new Option(name, `${c}x${r}`)));
   $('#layoutSel').onchange = (e) => {
     // 지금 보고 있는 페이지의 칸 수만 바꿈
