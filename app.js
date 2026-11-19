@@ -67,8 +67,53 @@ function persist() {
 }
 
 function defaults() {
-  return { version: CONFIG_VERSION, cols: 5, rows: 3, pages: JSON.parse(JSON.stringify(DEFAULT_PAGES)) };
+  const pages = JSON.parse(JSON.stringify(DEFAULT_PAGES));
+  pages.forEach((p) => { if (AUTO_RULES[p.name]) p.auto = AUTO_RULES[p.name]; });
+  return { version: CONFIG_VERSION, cols: 5, rows: 3, pages };
 }
+
+// 폴더 페이지 빈 칸을 PC 의 최근 폴더로 채우기
+async function fillRecentFolders(pages) {
+  const page = pages.find((p) => p.name === '폴더');
+  if (!page) return;
+  let rec;
+  try { rec = await api('/api/recent'); } catch { return; }
+  const used = new Set(page.buttons.filter(Boolean).map((b) => b.value));
+  const n = config ? config.cols * config.rows : 15;
+  for (const path of rec.folders || []) {
+    if (used.has(path)) continue;
+    if (/[\\/](Downloads|Desktop|Documents|다운로드|바탕 화면|문서)$/i.test(path.replace(/[\\/]+$/, ''))) continue;
+    let slot = -1;
+    for (let i = 0; i < n; i++) if (!page.buttons[i]) { slot = i; break; }
+    if (slot < 0) break;
+    const name = path.replace(/[\\/]+$/, '').split(/[\\/]/).pop() || path;
+    page.buttons[slot] = { label: name, icon: 'i:folder', color: COLORS.app, type: 'open', value: path };
+    used.add(path);
+  }
+}
+
+// ---- 앱별 자동 페이지 전환 ----
+function ruleMatches(rule, fg) {
+  const p = (fg.process || '').toLowerCase(), t = (fg.title || '').toLowerCase();
+  return (rule || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean).some((n) => p === n || t.includes(n));
+}
+let lastAutoMatch = null, autoBusy = false;
+async function autoSwitchTick() {
+  if (!config || editing || autoBusy || document.hidden || lsGet('deck.autoSwitch') === 'off' || $('#editor').open) return;
+  if (!config.pages.some((p) => p.auto)) return;
+  autoBusy = true;
+  try {
+    const fg = await api('/api/foreground');
+    const match = config.pages.find((p) => p.auto && ruleMatches(p.auto, fg));
+    const key = match ? match.name : '';
+    if (key === lastAutoMatch) return;
+    lastAutoMatch = key;
+    const cur = curPage();
+    if (match) { if (!(cur.auto && ruleMatches(cur.auto, fg))) goPage(config.pages.indexOf(match)); }
+    else if (cur.auto) goPage(0);
+  } catch { /* 연결 문제는 상태 점으로 표시됨 */ } finally { autoBusy = false; }
+}
+setInterval(autoSwitchTick, 1000);
 
 // ---------------- 렌더링 ----------------
 const curPage = () => config.pages[pageIdx];
@@ -91,6 +136,8 @@ function render() {
   document.body.classList.toggle('editing', editing);
   $('#pageName').textContent = curPage().name;
   $('#layoutSel').value = `${config.cols}x${config.rows}`;
+  $('#autoToggleBtn').textContent = '자동 전환: ' + (lsGet('deck.autoSwitch') === 'off' ? '꺼짐' : '켜짐');
+  $('#autoRuleBtn').textContent = '자동 전환 앱' + (curPage().auto ? ` (${curPage().auto})` : '');
   renderDots();
   renderGrid();
 }
@@ -108,7 +155,7 @@ function renderDots() {
   });
 }
 
-function isTextIcon(s) { return /^[\x21-\x7E\u2190-\u21FF\u25A0-\u25FF\uAC00-\uD7A3]{1,5}$/.test(s); }
+function isTextIcon(s) { return /^[\x21-\x7E\u2190-\u21FF\u25A0-\u25FF\uAC00-\uD7A3\u4E00-\u9FFF]{1,5}$/.test(s); }
 
 // \uC544\uC774\uCF58 \uC694\uC18C \uB9CC\uB4E4\uAE30: "i:\uC774\uB984" \u2192 \uB2E8\uC0C9 \uC120 \uC544\uC774\uCF58, \uC9E7\uC740 \uAE00\uC790 \u2192 \uAE00\uC790, \uADF8 \uC678(\uC774\uBAA8\uC9C0) \u2192 \uD751\uBC31 \uCC98\uB9AC
 function iconEl(icon) {
@@ -504,6 +551,17 @@ function setupEditBar() {
       navStack = [];
       pageIdx = 0;
     },
+    autoRule() {
+      const cur = curPage();
+      const v = prompt('PC에서 어떤 프로그램이 앞에 오면 이 페이지를 자동으로 띄울까요?\n프로그램 이름(예: excel, Inventor) 또는 창 제목 일부(예: YouTube). 여러 개는 쉼표로.\n비우면 자동 전환을 끕니다.', cur.auto || '');
+      if (v === null) return;
+      if (v.trim()) cur.auto = v.trim(); else delete cur.auto;
+      lastAutoMatch = null;
+    },
+    autoToggle() {
+      lsSet('deck.autoSwitch', lsGet('deck.autoSwitch') === 'off' ? 'on' : 'off');
+      lastAutoMatch = null;
+    },
     done() { editing = false; moveFrom = null; },
   };
   document.querySelectorAll('#editBar [data-act]').forEach((b) => {
@@ -562,6 +620,16 @@ function migrate(c) {
       if (b.color && b.color.toLowerCase() in OLD_COLOR_TO_ACCENT) b.color = OLD_COLOR_TO_ACCENT[b.color.toLowerCase()];
     }
   }));
+  if (c.version === 7) {
+    // v8: 홈에 업무 시작/문구/폴더, 문구·폴더 페이지 추가 (다른 페이지는 그대로)
+    const fresh = JSON.parse(JSON.stringify(DEFAULT_PAGES));
+    const i = c.pages.findIndex((p) => p.name === '홈');
+    if (i >= 0) c.pages[i] = fresh.find((p) => p.name === '홈');
+    let at = c.pages.findIndex((p) => p.name === '단축키') + 1 || 1;
+    for (const name of ['문구', '폴더']) {
+      if (!c.pages.some((p) => p.name === name)) c.pages.splice(at++, 0, fresh.find((p) => p.name === name));
+    }
+  }
   if (c.version <= 6) {
     // v7: 홈을 '창으로 가기' 버튼 위주로 바꾸고, 기존 단축키 페이지들은 '단축키' 폴더 안으로 (다른 페이지는 그대로)
     const fresh = JSON.parse(JSON.stringify(DEFAULT_PAGES));
@@ -570,7 +638,11 @@ function migrate(c) {
     const i = c.pages.findIndex((p) => p.name === '홈');
     if (i >= 0) c.pages[i] = home; else c.pages.unshift(home);
     if (!c.pages.some((p) => p.name === '단축키')) c.pages.splice(c.pages.indexOf(home) + 1, 0, shortcuts);
+    for (const name of ['문구', '폴더']) {
+      if (!c.pages.some((p) => p.name === name)) c.pages.splice(c.pages.indexOf(shortcuts) + 1, 0, fresh.find((p) => p.name === name));
+    }
   }
+  c.pages.forEach((p) => { if (p.auto === undefined && AUTO_RULES[p.name]) p.auto = AUTO_RULES[p.name]; });
   c.version = CONFIG_VERSION;
 }
 
@@ -692,14 +764,17 @@ async function init() {
   try {
     const c = await api('/api/config');
     if (c && Array.isArray(c.pages) && c.pages.length && c.version >= 4 && c.version < CONFIG_VERSION) {
+      const needFolders = c.version <= 7;
       migrate(c);
       config = c;
+      if (needFolders) await fillRecentFolders(config.pages);
       persist();
       lsSet('deck.page', 0);
       toast('홈 화면이 창 전환 버튼으로 바뀌었습니다');
     } else if (c && Array.isArray(c.pages) && c.pages.length && c.version === CONFIG_VERSION) config = c;
     else {
       config = defaults();
+      await fillRecentFolders(config.pages);
       persist();
       lsSet('deck.page', 0);
       if (c) toast('새 추천 구성으로 바뀌었습니다');
