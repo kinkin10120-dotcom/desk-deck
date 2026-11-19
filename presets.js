@@ -1,6 +1,12 @@
 // 제품개발 엔지니어(Inventor) + Excel + YouTube 용 추천 구성. 15키(5×3), 폴더 키로 페이지 이동.
 // 아이콘: "i:이름" = 단색 선 아이콘(icons.js), 그 외 짧은 글자(E, F6, PgUp)는 글자로 표시.
-const CONFIG_VERSION = 7;
+const CONFIG_VERSION = 8;
+
+// 페이지별 자동 전환: PC 맨 앞 프로그램이 이 이름(프로그램 이름 또는 창 제목 일부)이면 그 페이지로
+const AUTO_RULES = {
+  'Inventor': 'Inventor', '스케치': 'Inventor', '모델링': 'Inventor', '어셈블리': 'Inventor', '파일·도면': 'Inventor',
+  'Excel': 'excel', 'YouTube': 'YouTube',
+};
 
 // 포인트 색 (키 왼쪽 위 작은 점으로만 표시)
 const COLORS = {
@@ -24,14 +30,40 @@ const DEFAULT_PAGES = [
     B('WeChat', 'i:message-square', C.text, 'window', 'Weixin,WeChat'),
     B('탐색기', 'i:folder-open', C.none, 'window', 'explorer'),
     B('Claude', 'i:lightbulb', C.none, 'window', 'claude'),
-    B('메모장', 'i:notepad-text', C.none, 'window', 'notepad'),
     B('계산기', 'i:calculator', C.none, 'window', 'CalculatorApp|calc'),
+    B('메모장', 'i:notepad-text', C.none, 'window', 'notepad'),
     B('창 전환', 'i:arrow-left-right', C.none, 'key', 'alt+tab'),
-    B('화면 캡처', 'i:scan', C.none, 'key', 'win+shift+s'),
-    B('바탕화면', 'i:monitor', C.none, 'key', 'win+d'),
+    // 3줄: 묶음 동작 + 폴더들
+    B('업무 시작', 'i:power', C.inv, 'macro',
+      '# 업무 프로그램을 한 번에 열거나 앞으로\nwindow Inventor\nwait 1500\nwindow excel\nwait 1500\nwindow chrome\nwait 1000\nwindow Weixin,WeChat'),
+    B('문구', 'i:message-square', C.text, 'page', '문구'),
+    B('폴더', 'i:folder', C.app, 'page', '폴더'),
     B('단축키', 'i:keyboard', C.pc, 'page', '단축키'),
-    B('볼륨 −', 'i:volume-1', C.media, 'key', 'volumedown'),
-    B('볼륨 +', 'i:volume-2', C.media, 'key', 'volumeup'),
+    B('화면 캡처', 'i:scan', C.none, 'key', 'win+shift+s'),
+  ]},
+  { name: '문구', buttons: [
+    BACK(),
+    B('확인 후 회신', '한', C.text, 'text', '확인했습니다. 검토 후 회신드리겠습니다.'),
+    B('도면 첨부', '한', C.text, 'text', '도면 첨부드립니다. 확인 부탁드립니다.'),
+    B('일정 요청', '한', C.text, 'text', '일정 공유 부탁드립니다.'),
+    B('감사합니다', '한', C.text, 'text', '감사합니다.'),
+    B('Attached', 'EN', C.edit, 'text', 'Please find the attached drawing.'),
+    B('Quote / LT', 'EN', C.edit, 'text', 'Could you share the quotation and lead time?'),
+    B('Will check', 'EN', C.edit, 'text', 'Thank you. I will check and get back to you.'),
+    B('Thanks', 'EN', C.edit, 'text', 'Thank you!'),
+    B('查收图纸', '中', C.yt, 'text', '您好，请查收附件图纸。'),
+    B('报价交期', '中', C.yt, 'text', '请提供报价和交期，谢谢。'),
+    B('确认后回复', '中', C.yt, 'text', '收到，我确认后回复您。'),
+    B('谢谢', '中', C.yt, 'text', '谢谢！'),
+    B('오늘 날짜', 'i:calendar', C.none, 'text', '{date}'),
+    B('현재 시각', 'i:clock', C.none, 'text', '{time}'),
+  ]},
+  { name: '폴더', buttons: [
+    BACK(),
+    B('다운로드', 'i:download', C.app, 'open', 'explorer shell:Downloads'),
+    B('바탕화면', 'i:monitor', C.app, 'open', 'explorer shell:Desktop'),
+    B('문서', 'i:file-text', C.app, 'open', 'explorer shell:Personal'),
+    null, null, null, null, null, null, null, null, null, null, null,
   ]},
   { name: '단축키', buttons: [
     BACK(),
