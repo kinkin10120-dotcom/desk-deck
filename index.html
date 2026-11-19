@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0d">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Desk Deck</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="page-title"><span id="status" class="status" title="PC 연결 상태"></span><span id="pageName"></span></div>
+  <div class="top-right">
+    <button id="installBtn" class="icon-btn install" title="앱 설치" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg><span>앱 설치</span></button>
+    <button id="fullBtn" class="icon-btn" title="전체 화면"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+    <button id="editBtn" class="icon-btn" title="편집"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.17 6.81a1 1 0 0 0-3.98-3.98L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/><path d="m15 5 4 4"/></svg></button>
+  </div>
+</header>
+
+<div id="editBar" class="edit-bar">
+  <button data-act="addPage">＋ 페이지</button>
+  <button data-act="renamePage">이름 변경</button>
+  <button data-act="movePageLeft">◀</button>
+  <button data-act="movePageRight">▶</button>
+  <button data-act="deletePage" class="danger">페이지 삭제</button>
+  <label>레이아웃 <select id="layoutSel"></select></label>
+  <button data-act="reset" class="danger">추천 구성 복원</button>
+  <span class="grow"></span>
+  <button data-act="done" class="primary">완료</button>
+  <div id="installInfo" class="install-info"></div>
+</div>
+
+<main id="stage" class="stage">
+  <div class="device">
+    <div id="grid" class="grid"></div>
+  </div>
+</main>
+<nav id="dots" class="dots"></nav>
+
+<div id="toast" class="toast"></div>
+
+<div id="login" class="login" hidden>
+  <form id="loginForm" class="login-box">
+    <h2>PC 연결</h2>
+    <p>PC에서 <b>start-deck.bat</b>을 실행하면 나오는 주소로 접속하거나,<br>창에 표시된 토큰을 입력하세요.</p>
+    <input id="tokenInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="토큰 (8자리)">
+    <button class="primary">연결</button>
+  </form>
+</div>
+
+<dialog id="editor">
+  <form id="editorForm" method="dialog">
+    <h3 id="editorTitle">버튼 편집</h3>
+    <label class="full">추천 프리셋에서 가져오기
+      <select id="presetSel"></select>
+    </label>
+    <div class="row">
+      <div id="iconPreview" class="icon-preview"></div>
+      <label class="icon-field">아이콘<input id="fIcon" maxlength="40" autocapitalize="off" spellcheck="false" placeholder="i:save"></label>
+      <label class="grow">이름<input id="fLabel" maxlength="24" placeholder="버튼 이름"></label>
+    </div>
+    <button type="button" id="pickIconBtn" class="pick-btn">아이콘 고르기</button>
+    <div id="iconPicker" class="icon-picker" hidden></div>
+    <p class="hint">목록에서 선 아이콘을 고르거나, 짧은 글자(예: <b>E</b>, <b>F6</b>, <b>Esc</b>)를 직접 넣으면 키 위에 크게 표시됩니다.</p>
+    <div class="full">포인트 색 <span class="hint">(키 왼쪽 위의 작은 점)</span>
+      <div class="swatches" id="swatches"></div>
+    </div>
+    <label class="full">동작
+      <select id="fType">
+        <option value="key">단축키</option>
+        <option value="text">텍스트 입력</option>
+        <option value="open">프로그램 · 파일 · 폴더 · URL 열기</option>
+        <option value="macro">매크로 (여러 단계)</option>
+        <option value="page">폴더 (다른 페이지로 이동)</option>
+        <option value="back">뒤로 가기</option>
+        <option value="lock">화면 잠금</option>
+      </select>
+    </label>
+    <div id="chips" class="chips">
+      <button type="button" data-k="ctrl+">Ctrl</button>
+      <button type="button" data-k="shift+">Shift</button>
+      <button type="button" data-k="alt+">Alt</button>
+      <button type="button" data-k="win+">Win</button>
+      <button type="button" data-k="enter">Enter</button>
+      <button type="button" data-k="esc">Esc</button>
+      <button type="button" data-k="tab">Tab</button>
+      <button type="button" data-k="left">←</button>
+      <button type="button" data-k="right">→</button>
+      <button type="button" data-k="up">↑</button>
+      <button type="button" data-k="down">↓</button>
+      <button type="button" data-k="" class="danger">지우기</button>
+    </div>
+    <input id="fLine" class="full mono" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <textarea id="fArea" class="full mono" rows="5" autocapitalize="off" spellcheck="false"></textarea>
+    <select id="fPage" class="full"></select>
+    <p id="hint" class="hint"></p>
+    <div class="dlg-actions">
+      <button type="button" id="delBtn" class="danger">삭제</button>
+      <button type="button" id="moveBtn">이동</button>
+      <span class="grow"></span>
+      <button type="button" id="testBtn">테스트</button>
+      <button type="button" id="cancelBtn">취소</button>
+      <button type="button" id="saveBtn" class="primary">저장</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="config.js"></script>
+<script src="icons.js"></script>
+<script src="presets.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
