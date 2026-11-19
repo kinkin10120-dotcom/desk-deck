@@ -71,6 +71,7 @@
     </div>
     <label class="full">동작
       <select id="fType">
+        <option value="window">창으로 가기 (프로그램 창 전환)</option>
         <option value="key">단축키</option>
         <option value="text">텍스트 입력</option>
         <option value="open">프로그램 · 파일 · 폴더 · URL 열기</option>
@@ -95,6 +96,8 @@
       <button type="button" data-k="" class="danger">지우기</button>
     </div>
     <input id="fLine" class="full mono" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button type="button" id="pickWinBtn" class="pick-btn">지금 열린 창에서 고르기</button>
+    <div id="winList" class="win-list" hidden></div>
     <textarea id="fArea" class="full mono" rows="5" autocapitalize="off" spellcheck="false"></textarea>
     <select id="fPage" class="full"></select>
     <p id="hint" class="hint"></p>
