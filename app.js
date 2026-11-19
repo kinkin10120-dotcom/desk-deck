@@ -146,11 +146,16 @@ function goBack() {
 }
 
 const THEMES = [['tint', '틴트'], ['neon', '네온'], ['keycap', '키캡'], ['glass', '글래스']];
+const PRESS = [['cap', '키캡처럼 쑥'], ['shrink', '살짝 작아짐']];
 function applyTheme() {
   const t = (config && config.theme) || 'glass';
   THEMES.forEach(([k]) => document.body.classList.toggle('theme-' + k, k === t));
+  const p = (config && config.press) || 'cap';
+  document.body.classList.toggle('press-cap', p === 'cap');
   const sel = $('#themeSel');
   if (sel) sel.value = t;
+  const ps = $('#pressSel');
+  if (ps) ps.value = p;
 }
 
 function render() {
@@ -544,6 +549,8 @@ function setupEditor() {
 function setupEditBar() {
   THEMES.forEach(([k, name]) => $('#themeSel').add(new Option(name, k)));
   $('#themeSel').onchange = (e) => { config.theme = e.target.value; persist(); render(); };
+  PRESS.forEach(([k, name]) => $('#pressSel').add(new Option(name, k)));
+  $('#pressSel').onchange = (e) => { config.press = e.target.value; persist(); render(); };
   LAYOUTS.forEach(([c, r, name]) => $('#layoutSel').add(new Option(name, `${c}x${r}`)));
   $('#layoutSel').onchange = (e) => {
     // 지금 보고 있는 페이지의 칸 수만 바꿈
