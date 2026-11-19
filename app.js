@@ -12,7 +12,10 @@ let token = lsGet('deck.token') || '';
   if (t) { token = t.trim(); lsSet('deck.token', token); history.replaceState(null, '', location.pathname); }
 }
 
-const LAYOUTS = [[3, 2, '6키 (3×2)'], [5, 3, '15키 (5×3)'], [8, 4, '32키 (8×4)']];
+const LAYOUTS = [[3, 2, '6키 (3×2)'], [5, 3, '15키 (5×3)'], [6, 4, '24키 (6×4)'], [8, 4, '32키 (8×4)']];
+// 페이지마다 칸 수를 따로 둘 수 있음 (없으면 전체 기본값)
+const pageCols = () => (config && curPage().cols) || config.cols;
+const pageRows = () => (config && curPage().rows) || config.rows;
 
 let config = null;
 let pageIdx = 0;
@@ -135,7 +138,7 @@ function render() {
   if (!config) return;
   document.body.classList.toggle('editing', editing);
   $('#pageName').textContent = curPage().name;
-  $('#layoutSel').value = `${config.cols}x${config.rows}`;
+  $('#layoutSel').value = `${pageCols()}x${pageRows()}`;
   $('#autoToggleBtn').textContent = '자동 전환: ' + (lsGet('deck.autoSwitch') === 'off' ? '꺼짐' : '켜짐');
   $('#autoRuleBtn').textContent = '자동 전환 앱' + (curPage().auto ? ` (${curPage().auto})` : '');
   renderDots();
@@ -179,12 +182,12 @@ function svgIcon(name) {
 
 function renderGrid() {
   const grid = $('#grid');
-  grid.style.setProperty('--cols', config.cols);
-  grid.style.setProperty('--rows', config.rows);
+  grid.style.setProperty('--cols', pageCols());
+  grid.style.setProperty('--rows', pageRows());
   layoutKeys();
   grid.innerHTML = '';
   const page = curPage();
-  const n = config.cols * config.rows;
+  const n = pageCols() * pageRows();
   for (let i = 0; i < n; i++) {
     const b = page.buttons[i] || null;
     const el = document.createElement('button');
@@ -231,9 +234,10 @@ function layoutKeys() {
   const W = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   const H = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
   const g = 0.18, p = 0.3;
+  const cols = pageCols(), rows = pageRows();
   const k = Math.floor(Math.min(
-    W / (config.cols + (config.cols - 1) * g + 2 * p),
-    H / (config.rows + (config.rows - 1) * g + 2 * p),
+    W / (cols + (cols - 1) * g + 2 * p),
+    H / (rows + (rows - 1) * g + 2 * p),
   ));
   document.documentElement.style.setProperty('--k', Math.max(40, k) + 'px');
 }
@@ -512,8 +516,9 @@ function setupEditor() {
 function setupEditBar() {
   LAYOUTS.forEach(([c, r, name]) => $('#layoutSel').add(new Option(name, `${c}x${r}`)));
   $('#layoutSel').onchange = (e) => {
+    // 지금 보고 있는 페이지의 칸 수만 바꿈
     const [c, r] = e.target.value.split('x').map(Number);
-    config.cols = c; config.rows = r;
+    curPage().cols = c; curPage().rows = r;
     persist(); render();
   };
 
@@ -641,6 +646,12 @@ function migrate(c) {
     for (const name of ['문구', '폴더']) {
       if (!c.pages.some((p) => p.name === name)) c.pages.splice(c.pages.indexOf(shortcuts) + 1, 0, fresh.find((p) => p.name === name));
     }
+  }
+  if (c.version <= 8) {
+    // v9: 홈 = 작업 표시줄 고정 앱 24키 (다른 페이지는 그대로)
+    const freshHome = JSON.parse(JSON.stringify(DEFAULT_PAGES.find((p) => p.name === '홈')));
+    const i = c.pages.findIndex((p) => p.name === '홈');
+    if (i >= 0) c.pages[i] = freshHome; else c.pages.unshift(freshHome);
   }
   c.pages.forEach((p) => { if (p.auto === undefined && AUTO_RULES[p.name]) p.auto = AUTO_RULES[p.name]; });
   c.version = CONFIG_VERSION;
