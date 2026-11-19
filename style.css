@@ -197,6 +197,11 @@ dialog label { display: flex; flex-direction: column; gap: 6px; font-size: 13px;
 }
 .icon-picker button:active, .icon-picker button:hover { background: #ffffff12; }
 .icon-picker svg { width: 22px; height: 22px; }
+.win-list { display: flex; flex-direction: column; gap: 4px; max-height: 220px; overflow-y: auto; padding: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
+.win-list button { border: 0; background: transparent; color: var(--text); text-align: left; padding: 10px; border-radius: 8px; display: flex; gap: 10px; align-items: center; font-size: 14px; }
+.win-list button:active, .win-list button:hover { background: #ffffff12; }
+.win-list .proc { color: var(--muted); font-size: 12px; min-width: 80px; }
+.win-list .ttl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; align-items: center; }
 .swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; }
 .swatch.none { background: linear-gradient(135deg, transparent 45%, #6b7079 45%, #6b7079 55%, transparent 55%), var(--bg); border-color: var(--line); }
