@@ -25,6 +25,7 @@ let moveFrom = null;
 let editIdx = null;
 
 const HINTS = {
+  power: '<b>lock</b> 화면 잠금 · <b>monitoroff</b> 화면 끄기 · <b>sleep</b> 절전 · <b>restart</b> 10초 후 재시작 · <b>shutdown</b> 10초 후 끄기 · <b>cancel</b> 재시작/끄기 취소<br>절전·재시작·끄기는 누를 때 확인 창이 뜹니다.',
   window: '누르면 그 프로그램 창을 맨 앞으로 가져옵니다. 같은 창이 여러 개면 누를 때마다 다음 창으로, 꺼져 있으면 실행합니다.<br>'
     + '프로그램 이름(예: <b>excel</b>, <b>Inventor</b>, <b>chrome</b>) 또는 창 제목에 들어간 글자(예: <b>YouTube</b>). '
     + '여러 이름은 쉼표로, 창이 없을 때 열 것은 <b>|</b> 뒤에: <b>YouTube|https://www.youtube.com</b>',
@@ -284,6 +285,8 @@ async function onKey(i, el) {
     return;
   }
   if (b.type === 'back') { goBack(); return; }
+  const risky = b.confirm || (b.type === 'power' && ['sleep', 'restart', 'shutdown'].includes(b.value));
+  if (risky && !confirm(`PC '${b.label}'을(를) 실행할까요?`)) return;
 
   // 같은 버튼이 아직 실행 중이면 무시 (연타로 PC에 명령이 줄 서는 것 방지)
   const flightKey = pageIdx + ':' + i;
@@ -400,7 +403,7 @@ function setEditor(b) {
   $('#fLabel').value = b.label || '';
   selectColor(b.color || '');
   $('#fType').value = b.type || 'key';
-  $('#fLine').value = (b.type === 'key' || b.type === 'open' || b.type === 'window') ? (b.value || '') : '';
+  $('#fLine').value = ['key', 'open', 'window', 'power'].includes(b.type) ? (b.value || '') : '';
   $('#fArea').value = (b.type === 'text' || b.type === 'macro') ? (b.value || '') : '';
   fillPageSelect(b.type === 'page' ? b.value : '');
   updateTypeUI();
@@ -410,7 +413,7 @@ function readEditor() {
   const type = $('#fType').value;
   let value = '';
   if (type === 'text' || type === 'macro') value = $('#fArea').value;
-  else if (type === 'key' || type === 'open' || type === 'window') value = $('#fLine').value.trim();
+  else if (['key', 'open', 'window', 'power'].includes(type)) value = $('#fLine').value.trim();
   else if (type === 'page') value = $('#fPage').value;
   return { label: $('#fLabel').value.trim(), icon: $('#fIcon').value.trim(), color: editColor, type, value };
 }
@@ -418,13 +421,13 @@ function readEditor() {
 function updateTypeUI() {
   const t = $('#fType').value;
   $('#chips').hidden = t !== 'key';
-  $('#fLine').hidden = !(t === 'key' || t === 'open' || t === 'window');
+  $('#fLine').hidden = !['key', 'open', 'window', 'power'].includes(t);
   $('#pickWinBtn').hidden = t !== 'window';
   $('#winList').hidden = true;
   $('#fArea').hidden = !(t === 'text' || t === 'macro');
   $('#fPage').hidden = t !== 'page';
   $('#testBtn').hidden = t === 'page' || t === 'back';
-  $('#fLine').placeholder = t === 'key' ? 'ctrl+shift+s' : t === 'window' ? 'excel' : 'notepad 또는 https://...';
+  $('#fLine').placeholder = t === 'key' ? 'ctrl+shift+s' : t === 'window' ? 'excel' : t === 'power' ? 'sleep' : 'notepad 또는 https://...';
   $('#fArea').placeholder = t === 'macro' ? 'open notepad\nwait 1000\ntext 안녕하세요' : '입력할 문구';
   $('#hint').innerHTML = HINTS[t];
 }
@@ -645,6 +648,18 @@ function migrate(c) {
     if (!c.pages.some((p) => p.name === '단축키')) c.pages.splice(c.pages.indexOf(home) + 1, 0, shortcuts);
     for (const name of ['문구', '폴더']) {
       if (!c.pages.some((p) => p.name === name)) c.pages.splice(c.pages.indexOf(shortcuts) + 1, 0, fresh.find((p) => p.name === name));
+    }
+  }
+  if (c.version <= 9) {
+    // v10: 전원 페이지 추가 + 단축키 페이지 빈 칸에 전원 폴더
+    const freshPower = JSON.parse(JSON.stringify(DEFAULT_PAGES.find((p) => p.name === '전원')));
+    if (!c.pages.some((p) => p.name === '전원')) {
+      const at = c.pages.findIndex((p) => p.name === '단축키');
+      c.pages.splice(at >= 0 ? at + 1 : c.pages.length, 0, freshPower);
+    }
+    const sc = c.pages.find((p) => p.name === '단축키');
+    if (sc && !sc.buttons.some((b) => b && b.type === 'page' && b.value === '전원')) {
+      for (let i = 0; i < 15; i++) if (!sc.buttons[i]) { sc.buttons[i] = { label: '전원', icon: 'i:power', color: COLORS.yt, type: 'page', value: '전원' }; break; }
     }
   }
   if (c.version <= 8) {
