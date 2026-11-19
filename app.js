@@ -22,6 +22,9 @@ let moveFrom = null;
 let editIdx = null;
 
 const HINTS = {
+  window: '누르면 그 프로그램 창을 맨 앞으로 가져옵니다. 같은 창이 여러 개면 누를 때마다 다음 창으로, 꺼져 있으면 실행합니다.<br>'
+    + '프로그램 이름(예: <b>excel</b>, <b>Inventor</b>, <b>chrome</b>) 또는 창 제목에 들어간 글자(예: <b>YouTube</b>). '
+    + '여러 이름은 쉼표로, 창이 없을 때 열 것은 <b>|</b> 뒤에: <b>YouTube|https://www.youtube.com</b>',
   key: '예: ctrl+c · win+shift+s · e · f6 · ctrl+k ctrl+c (공백으로 구분하면 차례대로 입력)<br>키 이름: ctrl shift alt win · a–z 0–9 f1–f24 · enter esc tab space backspace delete home end pageup pagedown · up down left right · volumeup volumedown volumemute playpause next prev · hangul hanja printscreen · ] / . , -',
   text: '적은 글자를 PC의 현재 커서 위치에 그대로 타이핑합니다. 줄바꿈은 Enter로 입력됩니다.<br><b>{date}</b> → 오늘 날짜, <b>{time}</b> → 현재 시각',
   open: '예: notepad · calc · https://www.youtube.com · C:\\업무\\부품.ipt · explorer shell:Downloads',
@@ -346,7 +349,7 @@ function setEditor(b) {
   $('#fLabel').value = b.label || '';
   selectColor(b.color || '');
   $('#fType').value = b.type || 'key';
-  $('#fLine').value = (b.type === 'key' || b.type === 'open') ? (b.value || '') : '';
+  $('#fLine').value = (b.type === 'key' || b.type === 'open' || b.type === 'window') ? (b.value || '') : '';
   $('#fArea').value = (b.type === 'text' || b.type === 'macro') ? (b.value || '') : '';
   fillPageSelect(b.type === 'page' ? b.value : '');
   updateTypeUI();
@@ -356,7 +359,7 @@ function readEditor() {
   const type = $('#fType').value;
   let value = '';
   if (type === 'text' || type === 'macro') value = $('#fArea').value;
-  else if (type === 'key' || type === 'open') value = $('#fLine').value.trim();
+  else if (type === 'key' || type === 'open' || type === 'window') value = $('#fLine').value.trim();
   else if (type === 'page') value = $('#fPage').value;
   return { label: $('#fLabel').value.trim(), icon: $('#fIcon').value.trim(), color: editColor, type, value };
 }
@@ -364,11 +367,13 @@ function readEditor() {
 function updateTypeUI() {
   const t = $('#fType').value;
   $('#chips').hidden = t !== 'key';
-  $('#fLine').hidden = !(t === 'key' || t === 'open');
+  $('#fLine').hidden = !(t === 'key' || t === 'open' || t === 'window');
+  $('#pickWinBtn').hidden = t !== 'window';
+  $('#winList').hidden = true;
   $('#fArea').hidden = !(t === 'text' || t === 'macro');
   $('#fPage').hidden = t !== 'page';
   $('#testBtn').hidden = t === 'page' || t === 'back';
-  $('#fLine').placeholder = t === 'key' ? 'ctrl+shift+s' : 'notepad 또는 https://...';
+  $('#fLine').placeholder = t === 'key' ? 'ctrl+shift+s' : t === 'window' ? 'excel' : 'notepad 또는 https://...';
   $('#fArea').placeholder = t === 'macro' ? 'open notepad\nwait 1000\ntext 안녕하세요' : '입력할 문구';
   $('#hint').innerHTML = HINTS[t];
 }
@@ -384,10 +389,45 @@ function openEditor(i) {
   $('#editor').showModal();
 }
 
+// 프로그램 이름 → 어울리는 아이콘/이름
+const APP_HINTS = {
+  inventor: ['Inventor', 'drafting-compass'], excel: ['Excel', 'sheet'], chrome: ['Chrome', 'globe'], msedge: ['Edge', 'globe'],
+  weixin: ['WeChat', 'message-square'], wechat: ['WeChat', 'message-square'], kakaotalk: ['카카오톡', 'message-square'],
+  explorer: ['탐색기', 'folder-open'], claude: ['Claude', 'lightbulb'], winword: ['Word', 'file-text'], powerpnt: ['PowerPoint', 'image'],
+  outlook: ['Outlook', 'mail'], olk: ['Outlook', 'mail'], notepad: ['메모장', 'notepad-text'], calculatorapp: ['계산기', 'calculator'],
+  'ms-teams': ['Teams', 'users'], teams: ['Teams', 'users'], acad: ['AutoCAD', 'ruler'], parsecd: ['Parsec', 'monitor'],
+};
+
+async function pickWindow() {
+  const box = $('#winList');
+  box.hidden = false;
+  box.textContent = '불러오는 중…';
+  let list;
+  try { list = await api('/api/windows'); } catch (e) { box.textContent = e.message; return; }
+  box.innerHTML = '';
+  list.forEach((w) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    const p = document.createElement('span'); p.className = 'proc'; p.textContent = w.process;
+    const t = document.createElement('span'); t.className = 'ttl'; t.textContent = w.title;
+    b.append(p, t);
+    b.onclick = () => {
+      const hint = APP_HINTS[(w.process || '').toLowerCase()];
+      $('#fLine').value = w.process;
+      if (!$('#fLabel').value.trim()) $('#fLabel').value = hint ? hint[0] : w.process;
+      if (!$('#fIcon').value.trim()) { $('#fIcon').value = 'i:' + (hint ? hint[1] : 'app-window'); updateIconPreview(); }
+      box.hidden = true;
+    };
+    box.append(b);
+  });
+  if (!list.length) box.textContent = '열린 창이 없습니다';
+}
+
 function setupEditor() {
   fillPresetSelect();
   fillSwatches();
   fillIconPicker();
+  $('#pickWinBtn').onclick = pickWindow;
   $('#fType').onchange = updateTypeUI;
   document.querySelectorAll('#chips button').forEach((c) => {
     c.onclick = () => {
@@ -522,6 +562,15 @@ function migrate(c) {
       if (b.color && b.color.toLowerCase() in OLD_COLOR_TO_ACCENT) b.color = OLD_COLOR_TO_ACCENT[b.color.toLowerCase()];
     }
   }));
+  if (c.version <= 6) {
+    // v7: 홈을 '창으로 가기' 버튼 위주로 바꾸고, 기존 단축키 페이지들은 '단축키' 폴더 안으로 (다른 페이지는 그대로)
+    const fresh = JSON.parse(JSON.stringify(DEFAULT_PAGES));
+    const home = fresh.find((p) => p.name === '홈');
+    const shortcuts = fresh.find((p) => p.name === '단축키');
+    const i = c.pages.findIndex((p) => p.name === '홈');
+    if (i >= 0) c.pages[i] = home; else c.pages.unshift(home);
+    if (!c.pages.some((p) => p.name === '단축키')) c.pages.splice(c.pages.indexOf(home) + 1, 0, shortcuts);
+  }
   c.version = CONFIG_VERSION;
 }
 
@@ -646,7 +695,8 @@ async function init() {
       migrate(c);
       config = c;
       persist();
-      toast('아이콘이 새 디자인으로 바뀌었습니다');
+      lsSet('deck.page', 0);
+      toast('홈 화면이 창 전환 버튼으로 바뀌었습니다');
     } else if (c && Array.isArray(c.pages) && c.pages.length && c.version === CONFIG_VERSION) config = c;
     else {
       config = defaults();
