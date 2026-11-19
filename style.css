@@ -217,10 +217,13 @@ textarea { resize: vertical; }
 
 /* ================= 버튼 스타일 (편집 → 버튼 스타일) — --c = 버튼 분류 색 ================= */
 
+/* 스타일마다 그림자를 --sh 로 정해 두고, 눌림 효과(키캡)는 그 위에 깊이 그림자를 덧붙임 */
+body[class*="theme-"] .face { box-shadow: var(--sh); }
+
 /* 글래스: 매끈한 유리 반사 */
 body.theme-glass .face {
   background: linear-gradient(165deg, #2c2d32 0%, #1d1e22 48%, #141518 100%);
-  box-shadow: inset 0 1px 0 #ffffff24, inset 0 0 0 1px #ffffff0f, 0 10px 22px #000a;
+  --sh: inset 0 1px 0 #ffffff24, inset 0 0 0 1px #ffffff0f, 0 10px 22px #000a;
 }
 body.theme-glass .key:not(.empty):not(.back) .face::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
@@ -231,7 +234,7 @@ body.theme-glass .key:not(.empty):not(.back) .face::before {
 body.theme-tint .face {
   background: radial-gradient(130% 100% at 50% 0%,
     color-mix(in srgb, var(--c) 36%, #1b1c20) 0%, color-mix(in srgb, var(--c) 10%, #151619) 62%, #121316 100%);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c) 35%, transparent),
+  --sh: inset 0 1px 0 color-mix(in srgb, var(--c) 35%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent), 0 10px 20px #0009;
 }
 body.theme-tint .k-dot { display: none; }
@@ -242,25 +245,36 @@ body.theme-neon { --bg: #050506; }
 body.theme-neon .face {
   background: #0b0c0f;
   color: color-mix(in srgb, var(--c) 72%, white);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 34%, #1c1d22),
+  --sh: inset 0 0 0 1px color-mix(in srgb, var(--c) 34%, #1c1d22),
     0 0 22px -8px color-mix(in srgb, var(--c) 60%, transparent);
 }
 body.theme-neon .k-icon { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--c) 70%, transparent)); }
 body.theme-neon .k-dot { display: none; }
 body.theme-neon .k-label { color: #8d929c; }
 
-/* 키캡: 실제 키처럼 입체, 누르면 쑥 들어감 + 이름 아래 분류 색 막대 */
+/* 키캡: 실제 키처럼 밝은 윗면 + 이름 아래 분류 색 막대 */
 body.theme-keycap .face {
   background: linear-gradient(180deg, #32343a 0%, #24262b 100%);
-  box-shadow: inset 0 1px 0 #ffffff2b, inset 0 -3px 0 #00000055, 0 5cqmin 0 #0b0c0e, 0 6cqmin 14px #000b;
-  transform: translateY(-2.5cqmin);
-  transition: transform .06s ease, box-shadow .06s ease;
+  --sh: inset 0 1px 0 #ffffff2b, inset 0 -3px 0 #00000055, 0 6cqmin 14px #000b;
 }
-body.theme-keycap .key:active { transform: none; }
-body.theme-keycap .key:active .face { transform: translateY(1.5cqmin); box-shadow: inset 0 1px 0 #ffffff1c, 0 1cqmin 0 #0b0c0e; }
 body.theme-keycap .key:not(.empty):not(.back) .face::before {
   content: ""; position: absolute; left: 40%; right: 40%; bottom: 5cqh; height: max(3px, 1.6cqmin); border-radius: 3px;
   background: var(--c); opacity: .9;
 }
 body.theme-keycap .k-dot { display: none; }
-body.theme-keycap .key.empty .face, body.theme-keycap .key.back .face { transform: none; }
+
+/* ===== 눌림 효과: 키캡 (모든 스타일에 적용) — 버튼이 살짝 떠 있다가 누르면 쑥 들어감 ===== */
+body.press-cap .key:not(.empty):not(.back) .face {
+  transform: translateY(-2.5cqmin);
+  box-shadow: var(--sh), 0 4.5cqmin 0 #07080a;
+  transition: transform .06s ease, box-shadow .06s ease;
+}
+body.press-cap .key:active { transform: none; }
+body.press-cap .key:not(.empty):not(.back):active .face {
+  transform: translateY(1.5cqmin);
+  box-shadow: var(--sh), 0 1cqmin 0 #07080a;
+}
+body.press-cap .key.ok:not(.empty):not(.back) .face { box-shadow: inset 0 0 0 1.5px var(--ok), 0 4.5cqmin 0 #07080a; }
+body.press-cap .key.err:not(.empty):not(.back) .face { box-shadow: inset 0 0 0 1.5px var(--err), 0 4.5cqmin 0 #07080a; }
+body.press-cap.editing .key:not(.empty):not(.back) .face { box-shadow: inset 0 0 0 1px #ffffff2e, 0 4.5cqmin 0 #07080a; }
+body.press-cap .key.moving:not(.empty):not(.back) .face { box-shadow: inset 0 0 0 2px var(--accent), 0 4.5cqmin 0 #07080a !important; }
