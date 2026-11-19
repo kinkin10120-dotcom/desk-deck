@@ -13,9 +13,19 @@ let token = lsGet('deck.token') || '';
 }
 
 const LAYOUTS = [[3, 2, '6키 (3×2)'], [5, 3, '15키 (5×3)'], [6, 4, '24키 (6×4)'], [8, 4, '32키 (8×4)']];
-// 페이지마다 칸 수를 따로 둘 수 있음 (없으면 전체 기본값)
-const pageCols = () => (config && curPage().cols) || config.cols;
-const pageRows = () => (config && curPage().rows) || config.rows;
+// 페이지마다 칸 수를 따로 둘 수 있음 (없으면 전체 기본값). 저장은 '가로 기준'으로.
+const baseCols = () => (config && curPage().cols) || config.cols;
+const baseRows = () => (config && curPage().rows) || config.rows;
+// 화면 방향에 맞춰 돌림: 가로면 긴 쪽이 열, 세로면 긴 쪽이 행 (예: 6×4 ↔ 4×6) → 어느 방향이든 꽉 참
+const isPortrait = () => window.innerHeight > window.innerWidth;
+const pageCols = () => (isPortrait() ? Math.min(baseCols(), baseRows()) : Math.max(baseCols(), baseRows()));
+const pageRows = () => (isPortrait() ? Math.max(baseCols(), baseRows()) : Math.min(baseCols(), baseRows()));
+let lastPortrait = null;
+window.addEventListener('resize', () => {
+  if (!config) return;
+  const p = isPortrait();
+  if (p !== lastPortrait) { lastPortrait = p; renderGrid(); }
+});
 
 let config = null;
 let pageIdx = 0;
@@ -139,7 +149,8 @@ function render() {
   if (!config) return;
   document.body.classList.toggle('editing', editing);
   $('#pageName').textContent = curPage().name;
-  $('#layoutSel').value = `${pageCols()}x${pageRows()}`;
+  $('#layoutSel').value = `${Math.max(baseCols(), baseRows())}x${Math.min(baseCols(), baseRows())}`;
+  lastPortrait = isPortrait();
   $('#autoToggleBtn').textContent = '자동 전환: ' + (lsGet('deck.autoSwitch') === 'off' ? '꺼짐' : '켜짐');
   $('#autoRuleBtn').textContent = '자동 전환 앱' + (curPage().auto ? ` (${curPage().auto})` : '');
   renderDots();
@@ -147,6 +158,7 @@ function render() {
 }
 
 function renderDots() {
+  return; // 페이지 점은 표시하지 않음 (폴더·뒤로·좌우 밀기로 이동)
   const nav = $('#dots');
   nav.innerHTML = '';
   config.pages.forEach((p, i) => {
@@ -701,8 +713,14 @@ document.addEventListener('pointerdown', () => {
 let swState = '확인 중';
 let deferredInstall = null;
 if (!('serviceWorker' in navigator)) swState = '지원 안 됨 (보안 주소 아님)';
-else navigator.serviceWorker.register('sw.js')
-  .then(() => { swState = '등록됨'; updateInstallInfo(); })
+else navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+  .then((reg) => {
+    swState = '등록됨'; updateInstallInfo();
+    reg.update().catch(() => {});
+    // 새 버전이 설치되면 한 번 자동 새로고침 → 바뀐 화면이 바로 보이게
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded) { reloaded = true; location.reload(); } });
+  })
   .catch((e) => { swState = '실패: ' + e.message; updateInstallInfo(); });
 
 let bipAt = null;
